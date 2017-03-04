@@ -20,6 +20,8 @@ use yii\db\ActiveRecord;
  */
 class ShopChildrenSync extends ActiveRecord
 {
+    const STATUS_ERROR = 0;
+    const STATUS_SUCCESS = 1;
     /**
      * @inheritdoc
      */
