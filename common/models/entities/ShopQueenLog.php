@@ -4,7 +4,11 @@ namespace bl\cms\shop\queen\common\models\entities;
 
 use common\models\User;
 use Yii;
+use yii\base\InvalidParamException;
+use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
+use yii\db\BaseActiveRecord;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "shop_queen_log".
@@ -21,6 +25,22 @@ use yii\db\ActiveRecord;
  */
 class ShopQueenLog extends ActiveRecord
 {
+    const ACTION_CREATE = 1;
+    const ACTION_UPDATE = 2;
+    const ACTION_DELETE = 3;
+
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => TimestampBehavior::className(),
+                'createdAtAttribute' => 'created_at',
+                'updatedAtAttribute' => 'created_at',
+                'value' => new Expression('NOW()')
+            ]
+        ];
+    }
+
     /**
      * @inheritdoc
      */
@@ -71,5 +91,26 @@ class ShopQueenLog extends ActiveRecord
     public function getUser()
     {
         return $this->hasOne(User::className(), ['id' => 'user_id']);
+    }
+
+    /**
+     * Logs an queen shop event
+     *
+     * @param BaseActiveRecord $entity
+     * @param integer $action action id
+     * @return mixed the property value
+     * @throws InvalidParamException if the property is not defined
+     */
+    public static function log($entity, $action) {
+        if(!($entity instanceof BaseActiveRecord)) {
+            throw new InvalidParamException();
+        }
+
+        $log = new ShopQueenLog();
+        $log->entity_id = $entity->getPrimaryKey();
+        $log->entity_name = $entity->className();
+        $log->action_id = $action;
+        $log->user_id = Yii::$app->user->id;
+        $log->save();
     }
 }
