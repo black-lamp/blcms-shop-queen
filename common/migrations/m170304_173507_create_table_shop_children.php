@@ -8,7 +8,7 @@ class m170304_173507_create_table_shop_children extends Migration
     {
         $this->createTable('shop_children', [
             'id' => $this->primaryKey(),
-            'domain_name' => $this->integer(),
+            'domain_name' => $this->string(),
             'company_id' => $this->integer(),
             'updated_at' => $this->dateTime(),
             'created_at' => $this->dateTime()
