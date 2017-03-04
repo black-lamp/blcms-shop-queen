@@ -3,7 +3,9 @@
 namespace bl\cms\shop\queen\common\models\entities;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "shop_children_synch".
@@ -22,6 +24,17 @@ class ShopChildrenSync extends ActiveRecord
 {
     const STATUS_ERROR = 0;
     const STATUS_SUCCESS = 1;
+
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => TimestampBehavior::className(),
+                'value' => new Expression('NOW()')
+            ]
+        ];
+    }
+
     /**
      * @inheritdoc
      */
