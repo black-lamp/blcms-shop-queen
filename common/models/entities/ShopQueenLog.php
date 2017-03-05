@@ -9,6 +9,7 @@ use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\db\BaseActiveRecord;
 use yii\db\Expression;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "shop_queen_log".
@@ -112,5 +113,25 @@ class ShopQueenLog extends ActiveRecord
         $log->action_id = $action;
         $log->user_id = Yii::$app->user->id;
         $log->save();
+    }
+
+    /**
+     * @param $site ShopChildren
+     * @return ShopQueenLog[]
+     */
+    public static function findUnapplied($site) {
+        $logs = ShopQueenLog::find()
+            ->joinWith(['synchronizations sync'])
+            ->where([
+                'sync.child_id' => $site->id
+            ])
+            ->andWhere(['!=', 'sync.status', ShopChildrenSync::STATUS_ERROR])
+            ->groupBy(['sync.queen_log_id'])
+            ->all();
+
+        return ShopQueenLog::find()
+            ->where(['not in', 'id', ArrayHelper::getColumn($logs, 'id')])
+            ->orderBy(['created_at' => SORT_ASC])
+            ->all();
     }
 }
