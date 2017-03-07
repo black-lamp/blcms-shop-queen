@@ -1,6 +1,7 @@
 <?php
 namespace bl\cms\shop\queen\common\commands;
 
+use bl\cms\shop\common\entities\Category;
 use bl\cms\shop\common\entities\Currency;
 use bl\cms\shop\common\entities\ProductCountry;
 use bl\cms\shop\common\entities\Vendor;
@@ -50,6 +51,14 @@ class SyncController extends Controller
                     case Vendor::className(): {
                         $requestUrl = '/subsite/rest/vendor/update';
                         $requestData = Vendor::find()
+                            ->where(['id' => $log->entity_id])
+                            ->with('translations')
+                            ->one();
+                        break;
+                    }
+                    case Category::className(): {
+                        $requestUrl = '/subsite/rest/category/update';
+                        $requestData = Category::find()
                             ->where(['id' => $log->entity_id])
                             ->with('translations')
                             ->one();
