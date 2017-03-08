@@ -3,6 +3,8 @@ namespace bl\cms\shop\queen\common\commands;
 
 use bl\cms\shop\common\entities\Category;
 use bl\cms\shop\common\entities\Currency;
+use bl\cms\shop\common\entities\Product;
+use bl\cms\shop\common\entities\ProductAvailability;
 use bl\cms\shop\common\entities\ProductCountry;
 use bl\cms\shop\common\entities\Vendor;
 use bl\cms\shop\queen\common\models\entities\ShopChildren;
@@ -56,11 +58,35 @@ class SyncController extends Controller
                             ->one();
                         break;
                     }
+                    case ProductAvailability::className(): {
+                        $requestUrl = '/subsite/rest/availability/update';
+                        $requestData = ProductAvailability::find()
+                            ->where(['id' => $log->entity_id])
+                            ->with('translations')
+                            ->one();
+                        break;
+                    }
                     case Category::className(): {
                         $requestUrl = '/subsite/rest/category/update';
                         $requestData = Category::find()
                             ->where(['id' => $log->entity_id])
                             ->with('translations')
+                            ->one();
+                        break;
+                    }
+                    case Product::className(): {
+                        $requestUrl = '/subsite/rest/product/update';
+                        $requestData = Product::find()
+                            ->where(['id' => $log->entity_id])
+                            ->with([
+                                'translations',
+                                'params',
+                                'productAvailability',
+                                'productPrices',
+                                'images',
+                                'combinations',
+                                'productAdditionalProducts'
+                            ])
                             ->one();
                         break;
                     }
