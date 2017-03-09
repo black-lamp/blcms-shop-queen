@@ -6,6 +6,7 @@ use bl\cms\shop\common\entities\Currency;
 use bl\cms\shop\common\entities\Product;
 use bl\cms\shop\common\entities\ProductAvailability;
 use bl\cms\shop\common\entities\ProductCountry;
+use bl\cms\shop\common\entities\ShopAttribute;
 use bl\cms\shop\common\entities\Vendor;
 use bl\cms\shop\queen\common\models\entities\ShopChildren;
 use bl\cms\shop\queen\common\models\entities\ShopChildrenSync;
@@ -13,13 +14,14 @@ use bl\cms\shop\queen\common\models\entities\ShopQueenLog;
 use yii\console\Controller;
 use yii\helpers\Console;
 use yii\httpclient\Client;
-use yii\httpclient\JsonParser;
 
 /**
  * @author Gutsulyak Vadim <guts.vadim@gmail.com>
  */
 class SyncController extends Controller
 {
+    private $logCounter = 0;
+
     public function actionIndex() {
         /* @var $sites ShopChildren[] */
 
@@ -74,6 +76,14 @@ class SyncController extends Controller
                             ->one();
                         break;
                     }
+                    case ShopAttribute::className(): {
+                        $requestUrl = '/subsite/rest/attribute/update';
+                        $requestData = ShopAttribute::find()
+                            ->where(['id' => $log->entity_id])
+                            ->with(['translations', 'attributeValues'])
+                            ->one();
+                        break;
+                    }
                     case Product::className(): {
                         $requestUrl = '/subsite/rest/product/update';
                         $requestData = Product::find()
@@ -125,5 +135,64 @@ class SyncController extends Controller
             }
         }
         $this->stdout("Done with {$errors} errors \n", Console::FG_GREY);
+    }
+
+    public function actionRegisterLog() {
+        ShopQueenLog::log(Currency::findCurrent(), ShopQueenLog::ACTION_UPDATE);
+
+        $this->logCounter= 0;
+        foreach (ProductCountry::find()->all() as $country) {
+            ShopQueenLog::log($country, ShopQueenLog::ACTION_UPDATE);
+            $this->logCounter++;
+        }
+        $this->stdout("{$this->logCounter} Countries logged \n", Console::FG_GREY);
+
+
+        $this->logCounter= 0;
+        foreach (Vendor::find()->all() as $vendor) {
+            ShopQueenLog::log($vendor, ShopQueenLog::ACTION_UPDATE);
+            $this->logCounter++;
+        }
+        $this->stdout("{$this->logCounter} Vendors logged \n", Console::FG_GREY);
+
+        $this->logCounter= 0;
+        foreach (ShopAttribute::find()->all() as $attribute) {
+            ShopQueenLog::log($attribute, ShopQueenLog::ACTION_UPDATE);
+            $this->logCounter++;
+        }
+        $this->stdout("{$this->logCounter} Attributes logged \n", Console::FG_GREY);
+
+        $this->logCounter= 0;
+        foreach (ProductAvailability::find()->all() as $availability) {
+            ShopQueenLog::log($availability, ShopQueenLog::ACTION_UPDATE);
+            $this->logCounter++;
+        }
+        $this->stdout("{$this->logCounter} Product Availabilities logged \n", Console::FG_GREY);
+
+        $this->logCounter= 0;
+        foreach (Category::findAll(['parent_id' => null]) as $category) {
+            $this->logCategory($category);
+        }
+        $this->stdout("{$this->logCounter} Categories logged \n", Console::FG_GREY);
+
+        $this->logCounter= 0;
+        foreach (Product::find()->all() as $product) {
+            ShopQueenLog::log($product, ShopQueenLog::ACTION_CREATE);
+            $this->logCounter++;
+        }
+        $this->stdout("{$this->logCounter} Products logged \n", Console::FG_GREY);
+    }
+
+    /**
+     * @param Category $category
+     */
+    private function logCategory($category) {
+        ShopQueenLog::log($category, ShopQueenLog::ACTION_CREATE);
+        $this->logCounter++;
+        if(!empty($category->categories)) {
+            foreach ($category->categories as $subCategory) {
+                $this->logCategory($subCategory);
+            }
+        }
     }
 }

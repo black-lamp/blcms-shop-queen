@@ -111,7 +111,9 @@ class ShopQueenLog extends ActiveRecord
         $log->entity_id = $entity->getPrimaryKey();
         $log->entity_name = $entity->className();
         $log->action_id = $action;
-        $log->user_id = Yii::$app->user->id;
+        if(!empty(Yii::$app->user)) {
+            $log->user_id = Yii::$app->user->id;
+        }
         $log->save();
     }
 

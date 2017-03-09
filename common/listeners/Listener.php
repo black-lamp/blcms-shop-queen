@@ -1,12 +1,14 @@
 <?php
 namespace bl\cms\shop\queen\common\listeners;
 
+use bl\cms\shop\backend\components\events\AttributeEvent;
 use bl\cms\shop\backend\components\events\CategoryEvent;
 use bl\cms\shop\backend\components\events\CountryEvent;
 use bl\cms\shop\backend\components\events\ProductAvailabilityEvent;
 use bl\cms\shop\backend\components\events\ProductEvent;
 use bl\cms\shop\backend\components\events\VendorEvent;
 use bl\cms\shop\backend\controllers\AdditionalProductController;
+use bl\cms\shop\backend\controllers\AttributeController;
 use bl\cms\shop\backend\controllers\CategoryController;
 use bl\cms\shop\backend\controllers\CombinationController;
 use bl\cms\shop\backend\controllers\CountryController;
@@ -47,6 +49,12 @@ class Listener implements BootstrapInterface
         Event::on(VendorController::className(),
             VendorController::EVENT_AFTER_CREATE_OR_UPDATE_VENDOR, function(VendorEvent $event) {
                 ShopQueenLog::log($event->vendor, ShopQueenLog::ACTION_UPDATE);
+            });
+
+        // Attribute listener
+        Event::on(AttributeController::className(),
+            AttributeController::EVENT_AFTER_CREATE_OR_UPDATE_ATTRIBUTE, function(AttributeEvent $event) {
+                ShopQueenLog::log($event->attribute, ShopQueenLog::ACTION_UPDATE);
             });
 
         // ProductAvailability listener
