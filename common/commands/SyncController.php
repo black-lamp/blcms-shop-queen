@@ -40,7 +40,7 @@ class SyncController extends Controller
                     case Currency::className(): {
                         $requestUrl = '/subsite/rest/currency/update';
                         $requestData = [
-                            'value' => Currency::findOne($log->entity_id)->value
+                            'value' => Currency::currentCurrency()
                         ];
                         break;
                     }
