@@ -201,10 +201,10 @@ class SyncController extends Controller
         $sites = ShopChildren::find()->all();
         foreach ($sites as $site) {
             if(!empty($site->site_name)) {
-                $destImagesDir = Yii::getAlias("@domains/" . $site->site_name . "/frontend/web/images/");
+                $destImagesDir = Yii::getAlias("@domains/" . $site->site_name . "/public_html/frontend/web/images/");
 
                 foreach ($syncDirs as $syncDir) {
-                    $sourceDir = $imagesDir . $syncDir;
+                    $sourceDir = $imagesDir . $syncDir . "/*";
                     $destDir = $destImagesDir . $syncDir;
 
                     $this->stdout("from $sourceDir to $destDir \n");
