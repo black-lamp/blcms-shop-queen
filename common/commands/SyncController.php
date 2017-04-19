@@ -114,30 +114,27 @@ class SyncController extends Controller
                     ],
                 ]);
 
-                if($requestUrl == '/subsite/rest/attribute/update') {
-                    $message = $client->createRequest()
-                        ->setMethod('post')
-                        ->setFormat(Client::FORMAT_JSON)
-                        ->setUrl($site->domain_name . $requestUrl)
-                        ->setData($requestData);
+                $message = $client->createRequest()
+                    ->setMethod('post')
+                    ->setFormat(Client::FORMAT_JSON)
+                    ->setUrl($site->domain_name . $requestUrl)
+                    ->setData($requestData);
 
-                    $response = $message->send();
+                $response = $message->send();
 
-                    $sync = new ShopChildrenSync();
-                    $sync->child_id = $site->id;
-                    $sync->queen_log_id = $log->id;
-                    $sync->status = $response->isOk ? ShopChildrenSync::STATUS_SUCCESS : ShopChildrenSync::STATUS_ERROR;
-                    $sync->save();
+                $sync = new ShopChildrenSync();
+                $sync->child_id = $site->id;
+                $sync->queen_log_id = $log->id;
+                $sync->status = $response->isOk ? ShopChildrenSync::STATUS_SUCCESS : ShopChildrenSync::STATUS_ERROR;
+                $sync->save();
 
-                    if(!$response->isOk) {
-                        $errors++;
-                        $this->stdout("{$response->content} \n", Console::FG_GREY);
-                    }
-
-                    $this->stdout("{$response->statusCode} - {$site->domain_name}{$requestUrl} \n", Console::FG_GREY);
-                    $this->stdout("{$message->content} \n", Console::FG_GREY);
+                if(!$response->isOk) {
+                    $errors++;
+                    $this->stdout("{$response->content} \n", Console::FG_GREY);
                 }
 
+                $this->stdout("{$response->statusCode} - {$site->domain_name}{$requestUrl} \n", Console::FG_GREY);
+                $this->stdout("{$message->content} \n", Console::FG_GREY);
             }
         }
         $this->stdout("Done with {$errors} errors \n", Console::FG_GREY);
