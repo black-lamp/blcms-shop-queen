@@ -37,8 +37,6 @@ class SyncController extends Controller
                 $requestUrl = '';
                 $requestData = [];
 
-                $this->stdout("{$log->entity_name} - {$log->entity_id} \n");
-
                 switch ($log->entity_name) {
                     case Currency::className(): {
                         $requestUrl = '/subsite/rest/currency/update';
@@ -133,8 +131,8 @@ class SyncController extends Controller
                     $this->stdout("{$response->content} \n", Console::FG_GREY);
                 }
 
-                $this->stdout("{$response->statusCode} - {$site->domain_name}{$requestUrl} \n", Console::FG_GREY);
-                $this->stdout("{$message->content} \n", Console::FG_GREY);
+                $this->stdout("{$response->statusCode} - {$site->domain_name}{$requestUrl} - {$log->entity_id} \n", Console::FG_GREY);
+//                $this->stdout("{$message->content} \n", Console::FG_GREY);
             }
         }
         $this->stdout("Done with {$errors} errors \n", Console::FG_GREY);
