@@ -37,6 +37,8 @@ class SyncController extends Controller
                 $requestUrl = '';
                 $requestData = [];
 
+                $this->stdout("{$log->entity_name} - {$log->entity_id} \n");
+
                 switch ($log->entity_name) {
                     case Currency::className(): {
                         $requestUrl = '/subsite/rest/currency/update';
@@ -125,7 +127,7 @@ class SyncController extends Controller
                     $sync->child_id = $site->id;
                     $sync->queen_log_id = $log->id;
                     $sync->status = $response->isOk ? ShopChildrenSync::STATUS_SUCCESS : ShopChildrenSync::STATUS_ERROR;
-//                    $sync->save();
+                    $sync->save();
 
                     if(!$response->isOk) {
                         $errors++;
