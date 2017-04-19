@@ -10,7 +10,8 @@ use yii\db\ActiveRecord;
  * This is the model class for table "shop_children".
  *
  * @property integer $id
- * @property integer $domain_name
+ * @property string $domain_name
+ * @property string $site_name
  * @property integer $company_id
  * @property string $updated_at
  * @property string $created_at

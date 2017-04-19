@@ -11,6 +11,7 @@ use bl\cms\shop\common\entities\Vendor;
 use bl\cms\shop\queen\common\models\entities\ShopChildren;
 use bl\cms\shop\queen\common\models\entities\ShopChildrenSync;
 use bl\cms\shop\queen\common\models\entities\ShopQueenLog;
+use Yii;
 use yii\console\Controller;
 use yii\helpers\Console;
 use yii\httpclient\Client;
@@ -111,27 +112,30 @@ class SyncController extends Controller
                     ],
                 ]);
 
-                $message = $client->createRequest()
-                    ->setMethod('post')
-                    ->setFormat(Client::FORMAT_JSON)
-                    ->setUrl($site->domain_name . $requestUrl)
-                    ->setData($requestData);
+                if($requestUrl == '/subsite/rest/attribute/update') {
+                    $message = $client->createRequest()
+                        ->setMethod('post')
+                        ->setFormat(Client::FORMAT_JSON)
+                        ->setUrl($site->domain_name . $requestUrl)
+                        ->setData($requestData);
 
-                $response = $message->send();
+                    $response = $message->send();
 
-                $sync = new ShopChildrenSync();
-                $sync->child_id = $site->id;
-                $sync->queen_log_id = $log->id;
-                $sync->status = $response->isOk ? ShopChildrenSync::STATUS_SUCCESS : ShopChildrenSync::STATUS_ERROR;
-                $sync->save();
+                    $sync = new ShopChildrenSync();
+                    $sync->child_id = $site->id;
+                    $sync->queen_log_id = $log->id;
+                    $sync->status = $response->isOk ? ShopChildrenSync::STATUS_SUCCESS : ShopChildrenSync::STATUS_ERROR;
+//                    $sync->save();
 
-                if(!$response->isOk) {
-                    $errors++;
-                    $this->stdout("{$response->content} \n", Console::FG_GREY);
+                    if(!$response->isOk) {
+                        $errors++;
+                        $this->stdout("{$response->content} \n", Console::FG_GREY);
+                    }
+
+                    $this->stdout("{$response->statusCode} - {$site->domain_name}{$requestUrl} \n", Console::FG_GREY);
+                    $this->stdout("{$message->content} \n", Console::FG_GREY);
                 }
 
-                $this->stdout("{$response->statusCode} - {$site->domain_name}{$requestUrl} \n", Console::FG_GREY);
-//                $this->stdout("{$message->content} \n", Console::FG_GREY);
             }
         }
         $this->stdout("Done with {$errors} errors \n", Console::FG_GREY);
@@ -181,6 +185,41 @@ class SyncController extends Controller
             $this->logCounter++;
         }
         $this->stdout("{$this->logCounter} Products logged \n", Console::FG_GREY);
+    }
+
+    public function actionFiles() {
+        $imagesDir = Yii::getAlias("@frontend/web/images/");
+        $syncDirs = [
+            'shop',
+            'shop-category',
+            'shop-product',
+            'shop-product-country',
+            'shop-vendors'
+        ];
+
+
+        $sites = ShopChildren::find()->all();
+        foreach ($sites as $site) {
+            if(!empty($site->site_name)) {
+                $destImagesDir = Yii::getAlias("@domains/" . $site->site_name . "/frontend/web/images/");
+
+                foreach ($syncDirs as $syncDir) {
+                    $sourceDir = $imagesDir . $syncDir;
+                    $destDir = $destImagesDir . $syncDir;
+
+                    $this->stdout("from $sourceDir to $destDir \n");
+
+                    if(!file_exists($destDir)) {
+                        mkdir($destDir);
+                    }
+                    $result = shell_exec("cp -Rnv $sourceDir $destDir");
+
+                    $this->stdout("$result \n");
+                }
+            }
+        }
+
+        echo $imagesDir;
     }
 
     /**
